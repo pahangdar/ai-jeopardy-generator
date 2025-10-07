@@ -66,7 +66,7 @@ Return ONLY the JSON array, no explanations or markdown.
         { role: "user", content: userPrompt }
       ],
       temperature: 0.7,
-      max_tokens: 1500,
+      // max_tokens: 1500,
     });
 
     const rawOutput = aiResponse.choices[0].message.content.trim();
@@ -93,14 +93,6 @@ app.post("/generate-questions", async (req, res) => {
     return res.status(400).json({ error: "A list of categories is required" });
   }
 
-  const difficultyMapping = {
-    100: "very easy",
-    200: "easy",
-    300: "medium",
-    400: "hard",
-    500: "very hard",
-  };
-
   const prompt = `
 You are a Jeopardy question generator. 
 For each given category, generate exactly 5 questions with increasing difficulty and corresponding points:
@@ -126,16 +118,14 @@ Output STRICTLY as a valid JSON array of this structure:
 ]
 
 Do not include any explanations, markdown, or text outside JSON.
-Categories: ${JSON.stringify(categories)}
-`;
+Avoid repeating questions from previous outputs.
+Categories: ${JSON.stringify(categories)} 
+Use a new variation. Random ID: ${Math.floor(Math.random()*10000)}`;
 
   try {
     const aiResponse = await groq.chat.completions.create({
       model: "llama-3.3-70b-versatile",
       messages: [{ role: "user", content: prompt }],
-      temperature: 0.7,
-      max_tokens: 1500,
-
     });
 
     let output = aiResponse.choices[0].message.content.trim();
